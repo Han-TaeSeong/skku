@@ -16,14 +16,14 @@ class2 = 오른손
 class3 = 양발
 class4 = 혀
 
-총 6개의 session
-각각의 session 안에서 48trials 측정(각 class 마다 12trials)
+2개의 session
+각각의 session 안에서 6runs 48trials 측정(각 class 마다 12trials)
 총 6X48 = 288 trails
 
 Session의 구성
 5분간 EOG 측정
-(2m: Eyes open // 1m: Eyes closed //2: Movement)
-(A04T only have Movement //technical issue)
+(2m: Eyes open // 1m: Eyes closed //2: Movement) +(6runs)    9개의 blocks
+ (A04T only have Movement //technical issue)
 
 At the beginning of a trial
 t=0 고정된 십자가 모니터에 나온다 and 삐 소리(cue sign)
@@ -32,3 +32,7 @@ t=0 고정된 십자가 모니터에 나온다 and 삐 소리(cue sign)
 
 22개의 Ag/AgCl 전극을 사용 EEG
 3개의 EOG
+
+
+
+data size = 9
