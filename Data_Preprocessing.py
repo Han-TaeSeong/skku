@@ -2,6 +2,10 @@ import scipy.io as sio  ### matlab file 변환
 import os
 import mne  ## EEG 처리
 
+import torch
+import torch.nn.functional as F
+import torch.nn as nn
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -65,10 +69,6 @@ def make_data():
         get_data('.\\BCI_Competition_4_2a\\A0' + i + 'E.mat')
 
 
-savefile = np.load('.\\Preprocessed_Data\\A02T.npz')
-x = savefile['x']
-y = savefile['y']
-
 
 def make_channel_first():
     for k in range(1, 10):
@@ -98,3 +98,12 @@ def make_channel_first():
                     a = np.concatenate((a, x[j][i][:]))
         x = a.reshape(22, 288, -1)
         np.savez(file=".\\Preprocessed_Data\\A0" + k + 'E_ChannelFirst.npz', x=x, y=y)
+
+
+
+# accu = [0.2894,0.2766,0.4610]
+# sub = ['DNN','CNN','EEGNet']
+# plt.bar(sub, accu)
+# plt.xlabel('Subject')
+# plt.ylabel('Accuracy')
+# plt.show()

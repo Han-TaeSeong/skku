@@ -33,6 +33,7 @@ class DNN(nn.Module):
 
 
 accu = list()
+accu_sum = 0
 for z in range(1,10):
     z = str(z)
     train_file = np.load('.\\Preprocessed_Data\\A0'+z+'T_ChannelFirst.npz')
@@ -59,13 +60,17 @@ for z in range(1,10):
         loss_fn = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model[x].parameters(), lr=0.001)
 
-        for epoch in range(1000):
+        for epoch in range(500):
             for a, b in loader_train:
                 pred = model[x](a)
                 loss = loss_fn(pred, b - 1)
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+        print(f'Channel : {x}  Loss : {loss}')
+
+    torch.save(model, '.\\Save_Model\\DNN_subject' + z + '.pth')
+    # model = torch.load('.\\Save_Model\\DNN_subject'+z+'.pth')
 
     with torch.no_grad():
         for x in range(0, 22):
@@ -87,18 +92,20 @@ for z in range(1,10):
     pred = torch.argmax(cnt_tensor, dim=1)
     correct = pred.eq((y_test - 1).data.view_as(pred)).sum()
     accuracy = correct / 288
+    accu_sum += accuracy
     accu.append(accuracy)
-    # print(f'Accuracy of {z} Data : {accuracy}')
+    print(f'Accuracy of {z} Data : {accuracy}')
 
-    torch.save(model,'.\\Save_Model\\DNN_subject'+z+'.pth')
 
 
 sub = list()
 for i in range(1,10):
     i = str(i)
     sub.append('subject'+i)
+accu.append(accu_sum / 9)
+sub.append('average')
 
-plt.bar(sub,accu)
+plt.bar(sub, accu)
 plt.xlabel('Subject')
 plt.ylabel('Accuracy')
 plt.show()
