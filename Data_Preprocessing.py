@@ -55,7 +55,7 @@ def get_data(file):
         eeg_info = mne.create_info(ch_names=25, sfreq=250, ch_types='eeg')
         b = mne.io.RawArray(b, info=eeg_info)
         b.filter(l_freq=0.5, h_freq=40)
-        # b.plot(n_channels=2, scalings=100)
+        # b.plot(n_channels=22, scalings=30)
         # plt.show()
         b = b.get_data()
         for j in range(0, 48):
@@ -70,6 +70,7 @@ def get_data(file):
     c = file.split('\\')[2]
     c = c.split('.')[0]
     np.savez(file=".\\Preprocessed_Data\\" + c + '.npz', x=feature, y=target)  ## 파일저장
+
 
 def preprocessing_3rd_butterworth(file):
     MAT = sio.loadmat(file)  ## 딕셔너리 class
@@ -296,8 +297,6 @@ def make_data():
         preprocessing_4_100Hz('.\\BCI_Competition_4_2a\\A0' + i + 'E.mat')
 
 
-
-make_data()
 
 def make_channel_first():
     for k in range(1, 10):
