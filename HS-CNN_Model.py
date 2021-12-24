@@ -16,18 +16,18 @@ import time
 start = time.time()
 
 ######################################## 모델 기초
-train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Beta_13-32Hz_BPF\\A06T.npz')
-test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Beta_13-32Hz_BPF\\A06E.npz')
+train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Beta_13-32Hz_BPF\\A01T.npz')
+test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Beta_13-32Hz_BPF\\A01E.npz')
 beta_train = torch.FloatTensor(train_file['x'])
 y_train = torch.LongTensor(train_file['y'])
 beta_test = torch.FloatTensor(test_file['x'])
 y_test = torch.LongTensor(test_file['y'])
-train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Theta_4-7Hz_BPF\\A06T.npz')
-test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Theta_4-7Hz_BPF\\A06E.npz')
+train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Theta_4-7Hz_BPF\\A01T.npz')
+test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Theta_4-7Hz_BPF\\A01E.npz')
 theta_train = torch.FloatTensor(train_file['x'])
 theta_test = torch.FloatTensor(test_file['x'])
-train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Mu_8-13Hz_BPF\\A06T.npz')
-test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Mu_8-13Hz_BPF\\A06E.npz')
+train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Mu_8-13Hz_BPF\\A01T.npz')
+test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Mu_8-13Hz_BPF\\A01E.npz')
 mu_train = torch.FloatTensor(train_file['x'])
 mu_test = torch.FloatTensor(test_file['x'])
 
@@ -37,38 +37,43 @@ class HS_CNN(nn.Module):
     def __init__(self):
         super().__init__()
         self.kernel_1 = nn.Sequential(nn.Conv2d(1, 10, kernel_size=(1, 85), stride=(1, 3)),
+                                      nn.BatchNorm2d(10),
+                                      nn.Conv2d(10, 10, kernel_size=(22, 1), stride=(1, 1)),
+                                      nn.BatchNorm2d(10),
                                       nn.ELU(),
-                                      nn.Conv2d(10, 10, kernel_size=(22, 1), stride=1),
-                                      nn.ELU())  ##10, 1, 42
+                                      nn.MaxPool2d(1,6))  ##10, 1, 31
         self.kernel_2 = nn.Sequential(nn.Conv2d(1, 10, kernel_size=(1, 65), stride=(1, 3)),
+                                      nn.BatchNorm2d(10),
+                                      nn.Conv2d(10, 10, kernel_size=(22, 1), stride=(1, 1)),
+                                      nn.BatchNorm2d(10),
                                       nn.ELU(),
-                                      nn.Conv2d(10, 10, kernel_size=(22, 1), stride=1),
-                                      nn.ELU())  ##10, 1, 48
+                                      nn.MaxPool2d(1,6))  ##10, 1, 32
         self.kernel_3 = nn.Sequential(nn.Conv2d(1, 10, kernel_size=(1, 45), stride=(1, 3)),
+                                      nn.BatchNorm2d(10),
+                                      nn.Conv2d(10, 10, kernel_size=(22, 1), stride=(1, 1)),
+                                      nn.BatchNorm2d(10),
                                       nn.ELU(),
-                                      nn.Conv2d(10, 10, kernel_size=(22, 1), stride=1),
-                                      nn.ELU())  ##10, 1, 55
-        self.linear1 = nn.Sequential(nn.Linear(4350, 100), nn.Dropout(p=0.8))
+                                      nn.MaxPool2d(1,6))  ##10, 1, 33
+        self.linear1 = nn.Sequential(nn.Linear(2880, 100), nn.ELU(), nn.Dropout(p=0.5))
         self.linear2 = nn.Linear(100, 4)
 
     def forward(self, x, y, z):
         xyz = None
         for i in {x, y, z}:
-            x1 = i[:, :, :, 0:208]  ##(288, 1, 22, 208) 만들기
-            x2 = i[:, :, :, 208:416]  ##(288, 1, 22, 208) 만들기
-            x3 = i[:, :, :, 416:]  ##(288, 1, 22, 209) 만들기
-
-            x1 = self.kernel_1(x1)
+            x1 = self.kernel_1(i)
             x1 = x1.view(x1.size(0), -1)
-            x2 = self.kernel_2(x2)
+
+            x2 = self.kernel_2(i)
             x2 = x2.view(x2.size(0), -1)
-            x3 = self.kernel_3(x3)
+
+            x3 = self.kernel_3(i)
             x3 = x3.view(x3.size(0), -1)
+
             if xyz == None:
-                xyz = torch.cat((x1, x2, x3), dim=1)  ## 48, 1450
+                xyz = torch.cat((x1, x2, x3), dim=1)  ## 48, 960
             else:
                 xyz = torch.cat((xyz, x1, x2, x3), dim=1)
-        x = self.linear1(xyz)  ## 48, 4350 --> 48 200
+        x = self.linear1(xyz)  ## 48, 2880 --> 48 200
         x = self.linear2(x)
         return x
 
@@ -86,9 +91,9 @@ loader_train = DataLoader(ds_train, batch_size=48, shuffle=True)
 
 model = HS_CNN()
 loss_fn = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(),lr=0.01)
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 
-for epoch in range(500):
+for epoch in range(400):
     error = None
     for x1, x2, x3, y in loader_train:
         model.train()
@@ -98,8 +103,8 @@ for epoch in range(500):
         loss.backward()
         optimizer.step()
         error = loss
-    if epoch % 50 == 0:
-        print(f'[Epoch] : {epoch:>5d}  [Loss] : {error:>.10f}')
+    if (epoch+1) % 50 == 0:
+        print(f'[Epoch] : {epoch+1:>5d}  [Loss] : {error:>2.10f}')
 
 with torch.no_grad():
     beta_test = beta_test.unsqueeze(dim=1)
