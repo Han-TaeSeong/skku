@@ -61,7 +61,6 @@ def get_data(file, low, high):
         for j in range(0, 48):
             beep = data[1].flatten()[j]  ##event
             c = b[:22, beep + 250 * 3:beep + 250 * 5 + 125].reshape(1, 22, -1)  ## 3초 ~ 5.5초
-
             if i == 3 and j == 0:
                 feature = c.copy()
             else:

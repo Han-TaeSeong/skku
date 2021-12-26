@@ -40,7 +40,7 @@ class EEGNet(nn.Module):
         x = self.layer2(x)
         x = x.view(x.size(0), -1)
         x = self.flatten(x)
-        return (x)
+        return x
 
 
 # class EEGNet(nn.Module):
@@ -83,8 +83,8 @@ nb_epoch = 500
 
 for z in range(1,10):
     z = str(z)
-    train_file = np.load('.\\Preprocessed_Data\\4_40Hz\\A0'+z+'T.npz')
-    test_file = np.load('.\\Preprocessed_Data\\4_40Hz\\A0'+z+'E.npz')
+    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0'+z+'T.npz')
+    test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0'+z+'E.npz')
     x_train = torch.Tensor(train_file['x'])
     y_train = torch.LongTensor(train_file['y'])
     x_test = torch.Tensor(test_file['x'])
@@ -101,7 +101,7 @@ for z in range(1,10):
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     for epoch in range(nb_epoch):
-        loss = 0
+        error = None
         for x, y in loader_train:
             model.train()
             pred = model(x)
@@ -109,9 +109,10 @@ for z in range(1,10):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        if epoch % 100 == 0 or epoch == (nb_epoch-1):
-            print(f'Epoch : {epoch}  Loss : {loss}')
-    torch.save(model, '.\\Save_Model\\4_40Hz\\EEGNet'+z+'.pth')
+            error = loss
+        if (epoch+1) % 100 == 0:
+            print(f'[Epoch] : {epoch+1:>5d}  [Loss] : {error:>2.10f}')
+    # torch.save(model, '.\\Save_Model\\4_40Hz\\EEGNet'+z+'.pth')
     # model = torch.load('.\\Save_Model\\EEGNet'+z+'.pth')
 
     with torch.no_grad():
@@ -128,19 +129,19 @@ for z in range(1,10):
             correct += pred.eq(y - 1).sum()
     accuracy = correct/288
     accu_sum += accuracy
-    print(f'Accuracy  : {accuracy}')
+    print(f'[Accuracy]  : {accuracy:>2.10f}')
     accu.append(accuracy)
 accu_avg=accu_sum/9
 
 
-print(f'Accuracy_average  : {accu_avg}, learning rate : {learning_rate}, nb_epoch : {nb_epoch}')
+print(f'[Accuracy_average]  : {accu_avg}, [learning rate] : {learning_rate}, [nb_epoch] : {nb_epoch}')
 
 sub = list()
 for i in range(1, 10):
     i = str(i)
-    sub.append('subject'+i)
+    sub.append('Subject'+i)
 accu.append(accu_avg)
-sub.append('average')
+sub.append('Average')
 
 plt.bar(sub, accu)
 plt.title(f'EEGNet, lr = {learning_rate}, nb_epoch = {nb_epoch}')
