@@ -81,14 +81,28 @@ accu_sum = 0
 learning_rate = 0.005
 nb_epoch = 500
 
-for z in range(1,10):
+for z in range(1, 10):
     z = str(z)
-    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0'+z+'T.npz')
-    test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0'+z+'E.npz')
+    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0' + z + 'T.npz')
+    test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0' + z + 'E.npz')
     x_train = torch.Tensor(train_file['x'])
     y_train = torch.LongTensor(train_file['y'])
     x_test = torch.Tensor(test_file['x'])
     y_test = torch.LongTensor(test_file['y'])
+    ## Window Sliding 방법
+    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3.5s - 6s\\4-40Hz_BPF\\A0' + z + 'T.npz')
+    a = torch.Tensor(train_file['x'])
+    b = torch.LongTensor(train_file['y'])
+    x_train = torch.cat((x_train,a),dim=0)
+    y_train = torch.cat((y_train,b))
+    ## Data Switching 방법
+    # train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s Augmentation\\4-40Hz_BPF\\A0' + z + 'T.npz')
+    # a = torch.Tensor(train_file['x'])
+    # b = torch.LongTensor(train_file['y'])
+    # x_train = torch.cat((x_train, a), dim=0)
+    # y_train = torch.cat((y_train, b))
+####################################################################################################
+
 
 
     x_train = x_train.unsqueeze(dim=1)  ##(288, 1, 22, 625) 만들기
@@ -110,8 +124,8 @@ for z in range(1,10):
             loss.backward()
             optimizer.step()
             error = loss
-        if (epoch+1) % 100 == 0:
-            print(f'[Epoch] : {epoch+1:>5d}  [Loss] : {error:>2.10f}')
+        if (epoch + 1) % 100 == 0:
+            print(f'[Epoch] : {epoch + 1:>5d}  [Loss] : {error:>2.10f}')
     # torch.save(model, '.\\Save_Model\\4_40Hz\\EEGNet'+z+'.pth')
     # model = torch.load('.\\Save_Model\\EEGNet'+z+'.pth')
 
@@ -127,19 +141,18 @@ for z in range(1,10):
             pred = model(x)
             pred = torch.argmax(pred, dim=1)
             correct += pred.eq(y - 1).sum()
-    accuracy = correct/288
+    accuracy = correct / 288
     accu_sum += accuracy
     print(f'[Accuracy]  : {accuracy:>2.10f}')
     accu.append(accuracy)
-accu_avg=accu_sum/9
-
+accu_avg = accu_sum / 9
 
 print(f'[Accuracy_average]  : {accu_avg}, [learning rate] : {learning_rate}, [nb_epoch] : {nb_epoch}')
 
 sub = list()
 for i in range(1, 10):
     i = str(i)
-    sub.append('Subject'+i)
+    sub.append('Subject' + i)
 accu.append(accu_avg)
 sub.append('Average')
 
@@ -148,8 +161,6 @@ plt.title(f'EEGNet, lr = {learning_rate}, nb_epoch = {nb_epoch}')
 plt.xlabel('Subject')
 plt.ylabel('Accuracy')
 plt.show()
-
-
 
 ######################################## 모델 기초
 # train_file = np.load('.\\Preprocessed_Data\\A06T.npz')

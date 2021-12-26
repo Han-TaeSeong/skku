@@ -24,20 +24,20 @@ class HS_CNN(nn.Module):
                                       nn.Conv2d(10, 10, kernel_size=(22, 1), stride=(1, 1)),
                                       nn.BatchNorm2d(10),
                                       nn.ELU(),
-                                      nn.MaxPool2d(1,6))  ##10, 1, 31
+                                      nn.AvgPool2d(1,6))  ##10, 1, 31
         self.kernel_2 = nn.Sequential(nn.Conv2d(1, 10, kernel_size=(1, 65), stride=(1, 3)),
                                       nn.BatchNorm2d(10),
                                       nn.Conv2d(10, 10, kernel_size=(22, 1), stride=(1, 1)),
                                       nn.BatchNorm2d(10),
                                       nn.ELU(),
-                                      nn.MaxPool2d(1,6))  ##10, 1, 32
+                                      nn.AvgPool2d(1,6))  ##10, 1, 32
         self.kernel_3 = nn.Sequential(nn.Conv2d(1, 10, kernel_size=(1, 45), stride=(1, 3)),
                                       nn.BatchNorm2d(10),
                                       nn.Conv2d(10, 10, kernel_size=(22, 1), stride=(1, 1)),
                                       nn.BatchNorm2d(10),
                                       nn.ELU(),
-                                      nn.MaxPool2d(1,6))  ##10, 1, 33
-        self.linear1 = nn.Sequential(nn.Linear(2880, 100), nn.ELU(), nn.Dropout(p=0.5))
+                                      nn.AvgPool2d(1,6))  ##10, 1, 33
+        self.linear1 = nn.Sequential(nn.Linear(2880, 100), nn.ELU(),nn.Dropout(p=0.5))
         self.linear2 = nn.Linear(100, 4)
 
     def forward(self, x, y, z):

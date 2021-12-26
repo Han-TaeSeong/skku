@@ -12,8 +12,8 @@ accu = list()
 accu_sum = 0
 for z in range(1,10):
     z = str(z)
-    train_file = np.load('.\\Preprocessed_Data\\4_40Hz\\A0'+z+'T.npz')
-    test_file = np.load('.\\Preprocessed_Data\\4_40Hz\\A0'+z+'E.npz')
+    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0'+z+'T.npz')
+    test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0'+z+'E.npz')
     x_train = train_file['x']
     y_train = train_file['y']
     x_test = test_file['x']
