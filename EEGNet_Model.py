@@ -16,6 +16,12 @@ import time
 start = time.time()
 
 
+USE_CUDA = torch.cuda.is_available()
+# print(USE_CUDA)
+device = torch.device('cuda:1' if USE_CUDA else 'cpu')
+# print('학습을 진행하는 기기:',device)
+
+
 class EEGNet(nn.Module):
     def __init__(self):
         super().__init__()
@@ -78,29 +84,33 @@ class EEGNet(nn.Module):
 
 accu = list()
 accu_sum = 0
-learning_rate = 0.005
+learning_rate = 0.0005
 nb_epoch = 500
 
 for z in range(1, 10):
     z = str(z)
-    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0' + z + 'T.npz')
-    test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0' + z + 'E.npz')
+    # train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0' + z + 'T.npz')
+    # test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0' + z + 'E.npz')
+    train_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s/4-40Hz_BPF/A0' + z + 'T.npz')
+    test_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s/4-40Hz_BPF/A0' + z + 'E.npz')
     x_train = torch.Tensor(train_file['x'])
     y_train = torch.LongTensor(train_file['y'])
     x_test = torch.Tensor(test_file['x'])
     y_test = torch.LongTensor(test_file['y'])
     ## Window Sliding 방법
-    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3.5s - 6s\\4-40Hz_BPF\\A0' + z + 'T.npz')
+    # train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3.5s - 6s\\4-40Hz_BPF\\A0' + z + 'T.npz')
+    train_file = np.load('./Post_Research/Preprocessed_Data/3.5s - 6s/4-40Hz_BPF/A0' + z + 'T.npz')
     a = torch.Tensor(train_file['x'])
     b = torch.LongTensor(train_file['y'])
     x_train = torch.cat((x_train,a),dim=0)
     y_train = torch.cat((y_train,b))
     ## Data Switching 방법
     # train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s Augmentation\\4-40Hz_BPF\\A0' + z + 'T.npz')
-    # a = torch.Tensor(train_file['x'])
-    # b = torch.LongTensor(train_file['y'])
-    # x_train = torch.cat((x_train, a), dim=0)
-    # y_train = torch.cat((y_train, b))
+    train_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s Augmentation/4-40Hz_BPF/A0' + z + 'T.npz')
+    a = torch.Tensor(train_file['x'])
+    b = torch.LongTensor(train_file['y'])
+    x_train = torch.cat((x_train, a), dim=0)
+    y_train = torch.cat((y_train, b))
 ####################################################################################################
 
 
@@ -110,14 +120,18 @@ for z in range(1, 10):
     ds_train = TensorDataset(x_train, y_train)
     loader_train = DataLoader(ds_train, batch_size=48, shuffle=True)
 
-    model = EEGNet()
-    loss_fn = nn.CrossEntropyLoss()
+    model = EEGNet().to(device)
+    loss_fn = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     for epoch in range(nb_epoch):
         error = None
         for x, y in loader_train:
             model.train()
+            ####################
+            x=x.to(device)
+            y=y.to(device)
+            ####################
             pred = model(x)
             loss = loss_fn(pred, y - 1)
             optimizer.zero_grad()
@@ -138,6 +152,10 @@ for z in range(1, 10):
         correct = 0
         for x, y in loader_test:
             model.eval()
+            ####################
+            x=x.to(device)
+            y=y.to(device)
+            ####################
             pred = model(x)
             pred = torch.argmax(pred, dim=1)
             correct += pred.eq(y - 1).sum()

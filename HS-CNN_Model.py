@@ -16,6 +16,13 @@ import time
 start = time.time()
 
 
+USE_CUDA = torch.cuda.is_available()
+# print(USE_CUDA)
+device = torch.device('cuda:1' if USE_CUDA else 'cpu')
+# print('학습을 진행하는 기기:',device)
+
+
+
 class HS_CNN(nn.Module):
     def __init__(self):
         super().__init__()
@@ -65,22 +72,63 @@ nb_epoch = 500
 
 for z in range(1,10):
     z = str(z)
-    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Beta_13-32Hz_BPF\\A0'+z+'T.npz')
-    test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Beta_13-32Hz_BPF\\A0'+z+'E.npz')
+    # train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Beta_13-32Hz_BPF\\A0'+z+'T.npz')
+    # test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Beta_13-32Hz_BPF\\A0'+z+'E.npz')
+    train_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s/Beta_13-32Hz_BPF/A0' + z + 'T.npz')
+    test_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s/Beta_13-32Hz_BPF/A0' + z + 'E.npz')
     beta_train = torch.FloatTensor(train_file['x'])
     y_train = torch.LongTensor(train_file['y'])
     beta_test = torch.FloatTensor(test_file['x'])
     y_test = torch.LongTensor(test_file['y'])
+    ## Window Sliding 방법
+    # train_file = np.load('./Post_Research/Preprocessed_Data/3.5s - 6s/Beta_13-32Hz_BPF/A0' + z + 'T.npz')
+    # a = torch.Tensor(train_file['x'])
+    # b = torch.LongTensor(train_file['y'])
+    # beta_train = torch.cat((beta_train,a),dim=0)
+    # y_train = torch.cat((y_train,b))
+    ## Data Switching 방법
+    train_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s Augmentation/Beta_13-32Hz_BPF/A0' + z + 'T.npz')
+    a = torch.Tensor(train_file['x'])
+    b = torch.LongTensor(train_file['y'])
+    beta_train = torch.cat((beta_train, a), dim=0)
+    y_train = torch.cat((y_train, b))
 
-    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Theta_4-7Hz_BPF\\A0'+z+'T.npz')
-    test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Theta_4-7Hz_BPF\\A0'+z+'E.npz')
+
+
+
+    # train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Theta_4-7Hz_BPF\\A0'+z+'T.npz')
+    # test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Theta_4-7Hz_BPF\\A0'+z+'E.npz')
+    train_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s/Theta_4-7Hz_BPF/A0' + z + 'T.npz')
+    test_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s/Theta_4-7Hz_BPF/A0' + z + 'E.npz')
     theta_train = torch.FloatTensor(train_file['x'])
     theta_test = torch.FloatTensor(test_file['x'])
+    ## Window Sliding 방법
+    # train_file = np.load('./Post_Research/Preprocessed_Data/3.5s - 6s/Theta_4-7Hz_BPF/A0' + z + 'T.npz')
+    # a = torch.Tensor(train_file['x'])
+    # theta_train = torch.cat((theta_train,a),dim=0)
+    ## Data Switching 방법
+    train_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s Augmentation/Theta_4-7Hz_BPF/A0' + z + 'T.npz')
+    a = torch.Tensor(train_file['x'])
+    theta_train = torch.cat((theta_train, a), dim=0)
 
-    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Mu_8-13Hz_BPF\\A0'+z+'T.npz')
-    test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Mu_8-13Hz_BPF\\A0'+z+'E.npz')
+
+
+
+    # train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Mu_8-13Hz_BPF\\A0'+z+'T.npz')
+    # test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\Mu_8-13Hz_BPF\\A0'+z+'E.npz')
+    train_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s/Mu_8-13Hz_BPF/A0' + z + 'T.npz')
+    test_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s/Mu_8-13Hz_BPF/A0' + z + 'E.npz')
     mu_train = torch.FloatTensor(train_file['x'])
     mu_test = torch.FloatTensor(test_file['x'])
+    ## Window Sliding 방법
+    # train_file = np.load('./Post_Research/Preprocessed_Data/3.5s - 6s/Mu_8-13Hz_BPF/A0' + z + 'T.npz')
+    # a = torch.Tensor(train_file['x'])
+    # mu_train = torch.cat((mu_train, a), dim=0)
+    ## Data Switching 방법
+    train_file = np.load('./Post_Research/Preprocessed_Data/3s - 5.5s Augmentation/Mu_8-13Hz_BPF/A0' + z + 'T.npz')
+    a = torch.Tensor(train_file['x'])
+    mu_train = torch.cat((mu_train, a), dim=0)
+
 
 
     beta_train = beta_train.unsqueeze(dim=1)  ##(288, 1, 22, 625) 만들기
@@ -90,8 +138,8 @@ for z in range(1,10):
     ds_train = TensorDataset(beta_train, theta_train, mu_train, y_train)
     loader_train = DataLoader(ds_train, batch_size=48, shuffle=True)
 
-    model = HS_CNN()
-    loss_fn = nn.CrossEntropyLoss()
+    model = HS_CNN().to(device)
+    loss_fn = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 
@@ -99,6 +147,12 @@ for z in range(1,10):
         error = None
         for x1, x2, x3, y in loader_train:
             model.train()
+            ##################
+            x1 = x1.to(device)
+            x2 = x2.to(device)
+            x3 = x3.to(device)
+            y = y.to(device)
+            ##################
             pred = model(x1, x2, x3)
             loss = loss_fn(pred, y - 1)
             optimizer.zero_grad()
@@ -118,6 +172,12 @@ for z in range(1,10):
         correct = 0
         for x1, x2, x3, y in loader_test:
             model.eval()
+            ##################
+            x1 = x1.to(device)
+            x2 = x2.to(device)
+            x3 = x3.to(device)
+            y = y.to(device)
+            ##################
             pred = model(x1, x2, x3)
             pred = torch.argmax(pred, dim=1)
             correct += pred.eq(y - 1).sum()
