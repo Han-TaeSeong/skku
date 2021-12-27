@@ -12,15 +12,28 @@ accu = list()
 accu_sum = 0
 for z in range(1,10):
     z = str(z)
-    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0'+z+'T.npz')
-    test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0'+z+'E.npz')
+    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0' + z + 'T.npz')
+    test_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s\\4-40Hz_BPF\\A0' + z + 'E.npz')
     x_train = train_file['x']
     y_train = train_file['y']
     x_test = test_file['x']
     y_test = test_file['y']
+    ## Window Sliding 방법
+    train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3.5s - 6s\\4-40Hz_BPF\\A0' + z + 'T.npz')
+    a = train_file['x']
+    b = train_file['y']
+    x_train = np.concatenate((x_train, a), axis=0)
+    y_train = np.concatenate((y_train, b))
+    ## Data Switching 방법
+    # train_file = np.load('.\\Post_Research\\Preprocessed_Data\\3s - 5.5s Augmentation\\4-40Hz_BPF\\A0' + z + 'T.npz')
+    # a = train_file['x']
+    # b = train_file['y']
+    # x_train = np.concatenate((x_train, a), axis=0)
+    # y_train = np.concatenate((y_train, b))
+    # ####################################################################################################
 
     x_train_SCM = ""  #### Sample Covariance Matrix
-    for i in range(0, 288):
+    for i in range(0, 288*2):
         scm = x_train[i]
         scm = (np.matmul(scm, scm.transpose())) / 625  #### time_series  로 나누어 주기(scaling)
         if i == 0:
@@ -49,7 +62,7 @@ for z in range(1,10):
         distance_4 = 0
 
         test_class = 0
-        for j in range(0, 288):
+        for j in range(0, 288*2):
             P2 = x_train_SCM[j]
 
             matrix = np.matmul(P1_inverse, P2)
