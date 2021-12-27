@@ -33,7 +33,7 @@ for z in range(1,10):
     # ####################################################################################################
 
     x_train_SCM = ""  #### Sample Covariance Matrix
-    for i in range(0, 288*2):
+    for i in range(0, 288*1):
         scm = x_train[i]
         scm = (np.matmul(scm, scm.transpose())) / 625  #### time_series  로 나누어 주기(scaling)
         if i == 0:
@@ -62,7 +62,7 @@ for z in range(1,10):
         distance_4 = 0
 
         test_class = 0
-        for j in range(0, 288*2):
+        for j in range(0, 288*1):
             P2 = x_train_SCM[j]
 
             matrix = np.matmul(P1_inverse, P2)
